@@ -1,0 +1,251 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Swagger Boilerplate API - OpenAPI 3.0",
+    "description": "Essa é um api boilerplate para cadastro de usuário e autenticação",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "email": "apiteam@swagger.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Saiba mais sobre o Swagger",
+    "url": "http://swagger.io"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3333"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Processo de autenticação"
+    }
+  ],
+  "paths": {
+    "/sign-up": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Cria um novo usuário",
+        "description": "Registra um novo usuário na base de dados.",
+        "operationId": "addUser",
+        "requestBody": {
+          "description": "Cria um novo usuário na api",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Usuário criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados de entrada inválidos"
+          }
+        }
+      }
+    },
+    "/sign-in": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Autentica um usuário e gera tokens",
+        "description": "Autentica um usuário com base no CPF e senha fornecidos e retorna tokens JWT.",
+        "operationId": "createToken",
+        "requestBody": {
+          "description": "Dados de autenticação do usuário",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTokenInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticação bem-sucedida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados de entrada inválidos ou falha na autenticação"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateUserInput": {
+        "type": "object",
+        "properties": {
+          "Cpf": {
+            "type": "string",
+            "description": "CPF do usuário"
+          },
+          "Password": {
+            "type": "string",
+            "description": "Senha do usuário"
+          },
+          "FirstName": {
+            "type": "string",
+            "description": "Primeiro nome do usuário"
+          },
+          "LastName": {
+            "type": "string",
+            "description": "Sobrenome do usuário"
+          }
+        },
+        "required": ["Cpf", "Password", "FirstName", "LastName"]
+      },
+      "CreateTokenInput": {
+        "type": "object",
+        "properties": {
+          "Cpf": {
+            "type": "string",
+            "description": "CPF do usuário"
+          },
+          "Password": {
+            "type": "string",
+            "description": "Senha do usuário"
+          }
+        },
+        "required": ["Cpf", "Password"]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "User": {
+            "$ref": "#/components/schemas/SimplifiedUser"
+          },
+          "Key": {
+            "$ref": "#/components/schemas/SimplifiedKey"
+          }
+        }
+      },
+      "SimplifiedUser": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID único do usuário"
+          },
+          "FirstName": {
+            "type": "string",
+            "description": "Primeiro nome do usuário"
+          },
+          "LastName": {
+            "type": "string",
+            "description": "Sobrenome do usuário"
+          },
+          "Cpf": {
+            "type": "string",
+            "description": "CPF do usuário"
+          }
+        }
+      },
+      "SimplifiedKey": {
+        "type": "object",
+        "properties": {
+          "Token": {
+            "type": "string",
+            "description": "Token JWT gerado"
+          },
+          "RefreshToken": {
+            "type": "string",
+            "description": "Token de atualização para gerar um novo JWT quando expirado"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID único do usuário"
+          },
+          "Cpf": {
+            "type": "string",
+            "description": "CPF do usuário"
+          },
+          "Password": {
+            "type": "string",
+            "description": "Senha do usuário (não retornada no response)"
+          },
+          "FirstName": {
+            "type": "string",
+            "description": "Primeiro nome do usuário"
+          },
+          "LastName": {
+            "type": "string",
+            "description": "Sobrenome do usuário"
+          },
+          "CreatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora de criação do usuário"
+          },
+          "UpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora da última atualização do usuário"
+          },
+          "DeletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora de exclusão do usuário (se excluído)"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "api_auth": {
+        "type": "jwt",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://127.0.0.1:3333/sign-in",
+            "scopes": {
+              "write:pets": "modify pets in your account",
+              "read:pets": "read your pets"
+            }
+          }
+        }
+      },
+      "api_key": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}

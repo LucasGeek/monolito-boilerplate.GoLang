@@ -1,0 +1,6 @@
+api.db
+
+.env
+.DS_Store
+
+.build/

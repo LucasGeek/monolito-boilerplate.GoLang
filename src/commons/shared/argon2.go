@@ -1,9 +1,11 @@
 package shared
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -53,20 +55,24 @@ func (a *Argon2Manager) HashPassword(password string) (string, error) {
 func (a *Argon2Manager) VerifyPassword(password, encodedHash string) (bool, error) {
 	parts := strings.Split(encodedHash, separator)
 	if len(parts) != 2 {
-		return false, errors.New("formato de hash inválido")
+		return false, errors.New("invalid hash format")
 	}
 
 	salt, err := base64.RawStdEncoding.DecodeString(parts[0])
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to decode salt: %w", err)
 	}
 
 	expectedHash, err := base64.RawStdEncoding.DecodeString(parts[1])
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to decode expected hash: %w", err)
 	}
 
 	calculatedHash := argon2.IDKey([]byte(password), salt, Time, Memory, Threads, KeySize)
 
-	return string(calculatedHash) == string(expectedHash), nil
+	if !bytes.Equal(calculatedHash, expectedHash) {
+		return false, errors.New("hash does not match")
+	}
+
+	return true, nil
 }

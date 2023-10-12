@@ -2,7 +2,7 @@ package repository
 
 import (
 	"errors"
-	"fmt"
+	"github.com/google/uuid"
 	"server/src/layers/domain/models"
 )
 
@@ -14,35 +14,39 @@ var (
 // UserRepository define a interface que qualquer armazenamento de usuário deve implementar
 type UserRepository interface {
 	Store(user *models.User) (*models.User, error)
-	FindByID(id string) (*models.User, error)
+	FindByID(id uuid.UUID) (*models.User, error)
 	FindByCPF(cpf string) (*models.User, error)
 	Update(user *models.User) error
-	UpdatePassword(userID, hashedPassword string) error
-	Delete(id string) error
+	UpdatePassword(id uuid.UUID, hashedPassword string) error
+	Delete(id uuid.UUID) error
 	FindAllWithPagination(limit int, offset int) ([]*models.User, error)
 }
 
 // MockUserRepository é uma implementação fictícia do UserRepository para testes
 type MockUserRepository struct {
-	users map[string]*models.User
+	users map[uuid.UUID]*models.User
 }
 
 // NewMockUserRepository cria uma nova instância do MockUserRepository
 func NewMockUserRepository() *MockUserRepository {
-	return &MockUserRepository{users: make(map[string]*models.User)}
+	return &MockUserRepository{users: make(map[uuid.UUID]*models.User)}
 }
 
 // Store adiciona um novo usuário ao armazenamento fictício
 func (m *MockUserRepository) Store(user *models.User) error {
-	if _, exists := m.users[fmt.Sprintf("%d", user.ID)]; exists {
+	if user.ID == uuid.Nil {
+		user.ID = uuid.New()
+	}
+
+	if _, exists := m.users[user.ID]; exists {
 		return ErrUserExists
 	}
-	m.users[fmt.Sprintf("%d", user.ID)] = user
+	m.users[user.ID] = user
 	return nil
 }
 
 // FindByID retorna um usuário pelo ID do armazenamento fictício
-func (m *MockUserRepository) FindByID(id string) (*models.User, error) {
+func (m *MockUserRepository) FindByID(id uuid.UUID) (*models.User, error) {
 	if user, exists := m.users[id]; exists {
 		return user, nil
 	}
@@ -61,15 +65,15 @@ func (m *MockUserRepository) FindByCPF(cpf string) (*models.User, error) {
 
 // Update atualiza um usuário existente no armazenamento fictício
 func (m *MockUserRepository) Update(user *models.User) error {
-	if _, exists := m.users[fmt.Sprintf("%d", user.ID)]; !exists {
+	if _, exists := m.users[user.ID]; !exists {
 		return ErrUserNotFound
 	}
-	m.users[fmt.Sprintf("%d", user.ID)] = user
+	m.users[user.ID] = user
 	return nil
 }
 
-func (m *MockUserRepository) UpdatePassword(userID string, hashedPassword string) error {
-	user, exists := m.users[userID]
+func (m *MockUserRepository) UpdatePassword(id uuid.UUID, hashedPassword string) error {
+	user, exists := m.users[id]
 	if !exists {
 		return ErrUserNotFound
 	}
@@ -78,7 +82,7 @@ func (m *MockUserRepository) UpdatePassword(userID string, hashedPassword string
 }
 
 // Delete remove um usuário pelo ID do armazenamento fictício
-func (m *MockUserRepository) Delete(id string) error {
+func (m *MockUserRepository) Delete(id uuid.UUID) error {
 	if _, exists := m.users[id]; !exists {
 		return ErrUserNotFound
 	}

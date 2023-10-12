@@ -16,17 +16,19 @@ func Connect() (*gorm.DB, error) {
 		},
 	}
 
-	db, err := gorm.Open(sqlite.Open("api.db"), config)
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), config)
 	if err != nil {
+		log.Printf("Erro ao conectar ao banco de dados: %v", err)
 		return nil, err
 	}
 
 	err = db.AutoMigrate(&models.User{})
 	if err != nil {
+		log.Printf("Erro na migração automática: %v", err)
 		return nil, err
 	}
 
-	log.Println("banco de dados aberto com sucesso")
+	log.Println("Banco de dados aberto com sucesso")
 	return db, nil
 }
 

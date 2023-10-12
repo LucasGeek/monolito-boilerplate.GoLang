@@ -30,11 +30,11 @@ func NewUser(cpf, firstName, lastName, password string) (*User, error) {
 
 // validateUserFields verifica se os campos obrigatórios estão preenchidos e se o CPF é válido.
 func validateUserFields(cpf, firstName, lastName, password string) error {
-	if !shared.IsValidCPF(cpf) {
-		return errors.New("Cpf com formato inválido")
-	}
 	if cpf == "" {
 		return errors.New("Cpf deve ser informado")
+	}
+	if !shared.IsValidCPF(cpf) {
+		return errors.New("Cpf com formato inválido")
 	}
 	if firstName == "" {
 		return errors.New("Nome deve ser informado")

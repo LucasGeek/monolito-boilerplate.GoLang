@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/google/uuid"
 	"server/src/layers/service/queries"
 	"strconv"
 
@@ -20,7 +21,12 @@ func NewUserHandler(getUser queries.GetUserQueryHandler) *UserHandler {
 
 // Get recupera informações do usuário com base no ID fornecido na URL
 func (h *UserHandler) Get(c *fiber.Ctx) error {
-	id := c.Params("id")
+	idStr := c.Params("id")
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "ID inválido"})
+	}
 
 	query := queries.GetUserByIDQuery{
 		UserID: id,

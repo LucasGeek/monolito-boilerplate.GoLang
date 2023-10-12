@@ -2,6 +2,7 @@ package queries
 
 import (
 	"errors"
+	"github.com/google/uuid"
 	"server/src/layers/domain/models"
 	"server/src/layers/domain/repository"
 )
@@ -12,7 +13,7 @@ type GetUserQueryHandler struct {
 
 // GetUserByIDQuery representa a consulta para obter um usuário pelo ID
 type GetUserByIDQuery struct {
-	UserID string `json:"ID"`
+	UserID uuid.UUID `json:"ID"`
 }
 
 // GetUserByCPFQuery representa a consulta para obter um usuário pelo cpf

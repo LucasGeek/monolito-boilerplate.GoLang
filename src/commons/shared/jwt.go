@@ -69,15 +69,15 @@ func (manager *JWTManager) generateToken(UserID uuid.UUID, duration time.Duratio
 
 // Verify analisa o token JWT, valida-o e retorna as informações do usuário contidas no token.
 func (manager *JWTManager) Verify(tokenStr string) (*UserClaims, error) {
-	return manager.verify(tokenStr, &UserClaims{})
+	return manager.verify(tokenStr)
 }
 
 // VerifyRefreshToken analisa o refresh token JWT, valida-o e retorna as informações do usuário contidas no token.
-func (manager *JWTManager) VerifyRefreshToken(tokenStr string) (*UserClaims, error) {
-	return manager.verify(tokenStr, &RefreshTokenClaims{})
+func (manager *JWTManager) VerifyRefreshToken(tokenStr string) (*RefreshTokenClaims, error) {
+	return manager.verifyRefreshToken(tokenStr)
 }
 
-func (manager *JWTManager) verify(tokenStr string, claims jwt.Claims) (*UserClaims, error) {
+func (manager *JWTManager) verifyToken(tokenStr string, claims jwt.Claims) (jwt.Claims, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenStr,
 		claims,
@@ -94,7 +94,30 @@ func (manager *JWTManager) verify(tokenStr string, claims jwt.Claims) (*UserClai
 		return nil, err
 	}
 
-	userClaims, ok := token.Claims.(*UserClaims)
+	return token.Claims, nil
+}
+
+func (manager *JWTManager) verifyRefreshToken(tokenStr string) (*RefreshTokenClaims, error) {
+	claims, err := manager.verifyToken(tokenStr, &RefreshTokenClaims{})
+	if err != nil {
+		return nil, err
+	}
+
+	userClaims, ok := claims.(*RefreshTokenClaims)
+	if !ok {
+		return nil, errors.New(errUnexpectedTokenClaims)
+	}
+
+	return userClaims, nil
+}
+
+func (manager *JWTManager) verify(tokenStr string) (*UserClaims, error) {
+	claims, err := manager.verifyToken(tokenStr, &UserClaims{})
+	if err != nil {
+		return nil, err
+	}
+
+	userClaims, ok := claims.(*UserClaims)
 	if !ok {
 		return nil, errors.New(errUnexpectedTokenClaims)
 	}

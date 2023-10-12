@@ -3,6 +3,7 @@ package persistence
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"server/src/layers/domain/models"
 )
@@ -28,7 +29,7 @@ func (ur *UserRepository) Store(user *models.User) (*models.User, error) {
 }
 
 // FindByID busca um usuário pelo ID.
-func (ur *UserRepository) FindByID(id string) (*models.User, error) {
+func (ur *UserRepository) FindByID(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	if err := ur.db.First(&user, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,12 +58,12 @@ func (ur *UserRepository) Update(user *models.User) error {
 }
 
 // UpdatePassword atualiza a senha do usuário e cria um evento relacionado.
-func (ur *UserRepository) UpdatePassword(userID string, hashedPassword string) error {
-	return ur.db.Model(&models.User{}).Where("id = ?", userID).Update("password", hashedPassword).Error
+func (ur *UserRepository) UpdatePassword(id uuid.UUID, hashedPassword string) error {
+	return ur.db.Model(&models.User{}).Where("id = ?", id).Update("password", hashedPassword).Error
 }
 
 // Delete remove um usuário e cria um evento relacionado.
-func (ur *UserRepository) Delete(id string) error {
+func (ur *UserRepository) Delete(id uuid.UUID) error {
 	return ur.db.Delete(&models.User{}, "id = ?", id).Error
 }
 
